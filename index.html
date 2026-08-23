@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dimas TV - Streaming Portal</title>
+    <!-- Memanggil library Shaka Player -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #121212; color: white; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 300px; background: #1e1e1e; overflow-y: auto; border-right: 1px solid #333; padding: 10px; }
+        .main { flex-grow: 1; display: flex; flex-direction: column; }
+        .video-container { flex-grow: 1; background: #000; display: flex; align-items: center; justify-content: center; position: relative; }
+        video { width: 100%; height: 100%; max-height: 100vh; outline: none; }
+        h2 { text-align: center; border-bottom: 2px solid #e50914; padding-bottom: 10px; margin-top: 0; }
+        .channel-card { display: flex; align-items: center; padding: 10px; background: #2a2a2a; margin-bottom: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .channel-card:hover { background: #e50914; }
+        .channel-logo { width: 50px; height: 50px; object-fit: contain; background: #fff; border-radius: 4px; margin-right: 10px; }
+        .channel-info { display: flex; flex-direction: column; }
+        .channel-name { font-weight: bold; font-size: 14px; }
+        .channel-category { font-size: 11px; color: #aaa; }
+        #status { padding: 15px; background: #1e1e1e; text-align: center; font-weight: bold; border-top: 1px solid #333; }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR DAFTAR CHANNEL -->
+    <div class="sidebar">
+        <h2>📺 Dimas TV</h2>
+        <div id="channel-list"></div>
+    </div>
+
+    <!-- AREA PEMUTAR VIDEO -->
+    <div class="main">
+        <div class="video-container">
+            <video id="videoPlayer" controls autoplay></video>
+        </div>
+        <div id="status">Pilih channel di samping untuk mulai menonton...</div>
+    </div>
+
+    <script>
+        // 1. Masukkan sampel data dari file b_script milikmu di sini
+        const STREAM_URLS = {
+            channels: [
+                {
+                    "name": "SCTV",
+                    "category": "TV Indonesia",
+                    "logo": "https://thumbor.prod.vidiocdn.com/WL48ZBsxNGEncu7T5Bj0LuOmG2A=/filters:quality(70)/vidio-web-prod-livestreaming/uploads/livestreaming/image/204/sctv-f23abc.jpg",
+                    "servers": [
+                        { "name": "SCTV V+", "url": "https://d3b0v7fggu5zwm.cloudfront.net/out/v1/9e9aba7068ca4c7f8a73381bef5f8742/index.mpd|drmScheme=widevine&drmLicense=https://bintangstreaming.my.id/rcti_pro/index.drm?id=8" }
+                    ]
+                },
+                {
+                    "name": "TRANS TV",
+                    "category": "TV Indonesia",
+                    "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS1LAR1UUsYqpBTkO5W4bnL-bWT3V5bReOiIA&usqp=CAU",
+                    "servers": [
+                        { "name": "TRANS TV V+", "url": "https://d2xz2v5wuvgur6.cloudfront.net/out/v1/7a69cfc9e135493f87ac4efd63000429/index.mpd|drmScheme=widevine&drmLicense=https://ayo.maling.pl/V/vision/id=6.play" }
+                    ]
+                },
+                {
+                    "name": "BEIN SPORT 1",
+                    "category": "TV SPORT",
+                    "logo": "https://assets-us-01.kc-usercontent.com/31dbcbc6-da4c-0033-328a-d7621d0fa726/1318873e-8501-4f79-bb69-182d741cf9ad/beIN%20SPORTS%20Portada.jpg?ver=03-06-2025?w=3840&q=75",
+                    "servers": [
+                        { "name": "Bein Sport 1 ID", "url": "https://d6m3sfa7e58z5.cloudfront.net/out/v1/3b0660e05eed4d769521eb0275aab3ab/index.mpd|drmScheme=widevine&drmLicense=https://ayo.maling.pl/V/vision/id=122.play" }
+                    ]
+                },
+                {
+                    "name": "HBO",
+                    "category": "TV Movies",
+                    "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsJCt8flc4ECpgPntHKPzTcQzozpbVEVt3Gg&usqp=CAU",
+                    "servers": [
+                        { "name": "HBO MY", "url": "https://cors-proxy.wangzhishi.net/https://unifi-live2.secureswiftcontent.com/Content/DASH/Live/channel(HBO)/master.mpd|drmScheme=clearkey&drmLicense=7ad888ee5dd6496a8c2c77a6284ff936:718716c435914901d2551930a256974e" }
+                    ]
+                }
+                // Kamu bisa copas seluruh isi "channels" dari datamu ke sini!
+            ]
+        };
+
+        const videoEl = document.getElementById('videoPlayer');
+        const statusEl = document.getElementById('status');
+        let player;
+
+        // 2. Inisialisasi Shaka Player
+        function initApp() {
+            shaka.polyfill.installAll();
+            if (shaka.Player.isBrowserSupported()) {
+                player = new shaka.Player(videoEl);
+                player.addEventListener('error', onErrorEvent);
+                renderChannelList();
+            } else {
+                alert('Browser ini tidak mendukung Shaka Player!');
+            }
+        }
+
+        function onErrorEvent(event) {
+            console.error('Error kode', event.detail.code, 'object', event.detail);
+            statusEl.innerHTML = "❌ Terjadi Error saat memutar stream ini. Coba server lain.";
+        }
+
+        // 3. Render Daftar Channel ke Sidebar
+        function renderChannelList() {
+            const listDiv = document.getElementById('channel-list');
+            STREAM_URLS.channels.forEach(channel => {
+                const card = document.createElement('div');
+                card.className = 'channel-card';
+                card.innerHTML = `
+                    <img class="channel-logo" src="${channel.logo}" alt="logo">
+                    <div class="channel-info">
+                        <span class="channel-name">${channel.name}</span>
+                        <span class="channel-category">${channel.category}</span>
+                    </div>
+                `;
+                // Saat diklik, putar server pertama
+                card.onclick = () => playStream(channel.name, channel.servers[0].url);
+                listDiv.appendChild(card);
+            });
+        }
+
+        // 4. Logika Pemecah URL dan DRM
+        async function playStream(channelName, rawData) {
+            statusEl.innerHTML = `⏳ Sedang memuat: <b>${channelName}</b>...`;
+            
+            try {
+                // Memecah "URL|Parameter"
+                const [streamUrl, paramsStr] = rawData.split('|');
+                const params = new URLSearchParams(paramsStr || '');
+                const drmScheme = params.get('drmScheme');
+                const drmLicense = params.get('drmLicense');
+
+                const shakaConfig = { drm: {} };
+
+                // Mengatur sistem keamanan DRM
+                if (drmScheme === 'clearkey' && drmLicense) {
+                    const clearKeys = {};
+                    // Memecah banyak keyId:key (contoh: id1:key1,id2:key2)
+                    drmLicense.split(',').forEach(pair => {
+                        const [kid, key] = pair.split(':');
+                        if (kid && key) clearKeys[kid] = key;
+                    });
+                    shakaConfig.drm.clearKeys = clearKeys;
+                } else if (drmScheme === 'widevine' && drmLicense) {
+                    shakaConfig.drm.servers = { 'com.widevine.alpha': drmLicense };
+                }
+
+                // Terapkan konfigurasi dan putar
+                player.configure(shakaConfig);
+                await player.load(streamUrl);
+                
+                statusEl.innerHTML = `✅ Sedang menonton: <b>${channelName}</b>`;
+            } catch (error) {
+                console.error('Gagal memuat stream:', error);
+                statusEl.innerHTML = `❌ Gagal memutar <b>${channelName}</b>. (CORS / Link Mati)`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
