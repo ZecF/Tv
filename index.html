@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dimas TV - Ultimate Proxy Edition</title>
+    <title>Dimas TV - Golden Proxy Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
     <style>
         body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f0f0f; color: white; display: flex; height: 100vh; overflow: hidden; }
@@ -40,64 +40,40 @@
     </div>
 
     <script>
-        // DATA CHANNEL: Terverifikasi Stabil + Tambahan Baru + Proxy Support
+        // DATA CHANNEL: Hanya yang lulus uji + Tambahan Baru yang stabil
         const STREAM_URLS = [
             // ==========================================
-            // KATEGORI: TV NASIONAL
+            // KATEGORI: TV NASIONAL & BERITA
             // ==========================================
             {
                 "name": "TVRI Nasional",
-                "category": "TV Nasional",
+                "category": "Berita & Nasional",
                 "logo": "https://thumbor.prod.vidiocdn.com/ITgomqe4r80G_YlUJO-ZLBdgztM=/filters:quality(70)/vidio-web-prod-livestreaming/uploads/livestreaming/image/6441/tvri-tv-stream-f6cbb3.jpg",
                 "url": "https://ott-balancer.tvri.go.id/live/eds/Nasional/hls/Nasional.m3u8"
             },
             {
                 "name": "Metro TV",
-                "category": "TV Nasional",
+                "category": "Berita & Nasional",
                 "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2kPbkIp9idNFIcbHt1lxXr6FKQQUpRzrisw&usqp=CAU",
                 "url": "https://op-flashcon-digdayahd-1.dens.tv/h/h12/index.m3u8"
             },
             {
                 "name": "BTV (Berita Satu)",
-                "category": "TV Nasional",
+                "category": "Berita & Nasional",
                 "logo": "https://thumbor.prod.vidiocdn.com/4HBTMNO-_vri_NmmDniraoabE4c=/filters:quality(70)/vidio-web-prod-livestreaming/uploads/livestreaming/image/6165/beritasatu-e7ed52.jpg",
                 "url": "https://op-flashcon-digdayaxenkoda.dens.tv/e6550891-6bef-42e1-bab9-13bf4af739ce/stream.m3u8"
             },
             {
-                "name": "Garuda TV",
-                "category": "TV Nasional",
-                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGlgUdDa7-fZXLbW-pH52ATgr6-3CxX651NA&usqp=CAU",
-                "url": "https://hgmtv.com:19360/garudatvlivestreaming/garudatvlivestreaming.m3u8"
+                "name": "Astro Awani (MY)",
+                "category": "Berita & Nasional",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtacbQIf-CU_PHgCgXdhwO5Bf4yCh4Tah1Gg&usqp=CAU",
+                "url": "https://d2idp3hzkhjpih.cloudfront.net/out/v1/4b85d9c2bf97413eb0c9fd875599b837/index.m3u8"
             },
             {
-                "name": "RTV",
-                "category": "TV Nasional",
-                "logo": "https://thumbor.prod.vidiocdn.com/1TMD8nonXrRVhDaBUo7VQgJGkQc=/filters:quality(70)/vidio-web-prod-livestreaming/uploads/livestreaming/image/1561/rtv-stream-06c6dc.jpg",
-                "url": "https://op-flashcon-digdayahd-1.dens.tv/h/h10/index.m3u8"
-            },
-            {
-                "name": "TV One",
-                "category": "TV Nasional",
-                "logo": "https://thumbor.prod.vidiocdn.com/stn_xzEBBDF0BDuxM9iNypkhsN4=/filters:quality(70)/vidio-web-prod-livestreaming/uploads/livestreaming/image/783/tvone-a88018.jpg",
-                "url": "https://op-flashcon-digdayahd-1.dens.tv/h/h40/index.m3u8"
-            },
-            {
-                "name": "Nusantara TV",
-                "category": "TV Nasional",
-                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcYjsN0LwNmAf4vzNLZWyC2PjvfnQChgE-Ag&usqp=CAU",
-                "url": "https://op-flashcon-digdayahd-1.dens.tv/h/h37/index.m3u8"
-            },
-            {
-                "name": "Magna TV",
-                "category": "TV Nasional",
-                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5y0VvPKDGIvTpCCAiDW9ZBLWsHTX974fnrA&usqp=CAU",
-                "url": "https://op-flashcon-digdayahd-1.dens.tv/h/h24/index.m3u8"
-            },
-            {
-                "name": "JAKTV",
-                "category": "TV Nasional",
-                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSFlkdE5Gz7vhATclaEDl-ugpkC74KGPMAcrCKkHb-zq19WQROtNlF5Fxk&s=10",
-                "url": "https://d84q7nw4qf3j3.cloudfront.net/out/v1/fea2c4b90ae2472d891389eb8b95571c/index.mpd|User-Agent=Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1&drmScheme=clearkey&drmLicense=5dfa046b3bf14866a143470d9c8dd74d:97e354284ee7a67e5dafbce04e17c4c0"
+                "name": "TV Muhammadiyah",
+                "category": "Berita & Nasional",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTZGld8fbsoOd9U6hudiENwlIxSPyvcaPEYgGYtmUyyCqXz56xXiHdfPcrS&s=10",
+                "url": "https://d84q7nw4qf3j3.cloudfront.net/out/v1/980cfe26ff00479c97eb8057a1129c7f/index.mpd|User-Agent=Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1&drmScheme=clearkey&drmLicense=94f0b3d645c64f0dbe2e0990ec290cdf:0dc311915f9decffaf7dfee30c4d8482"
             },
 
             // ==========================================
@@ -110,22 +86,34 @@
                 "url": "https://rmtv.akamaized.net/hls/live/2043154/rmtv-en-web/master.m3u8"
             },
             {
-                "name": "AC Milan TV",
+                "name": "Barca TV",
                 "category": "Olahraga",
-                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2jCWCmH9R0WS0_dnYjXVas4orr_gcRWmuLbszjFkyPtu_oMGw_eqjKX4&s=10",
-                "url": "https://otte.live.fly.ww.aiv-cdn.net/lhr-nitro/live/clients/dash/enc/jsqfhask6w/out/v1/e70dcd0f1e684592a3db4bbe7feee0fa/cenc.mpd|drmScheme=clearkey&drmLicense=602f114e6caa09eb9ec0dc18d0b01cb0:0c433e2a2157f7c1e240ad7eac62d604"
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7OoulmuZEQA2ev4rTr97DqAWEHj8yaut1YNrjKyuB9OC0VrBhedhyVts&s=10",
+                "url": "https://amg17560-fcb-amg17560c1-rakuten-uk-4891.playouts.now.amagi.tv/playlist/amg17560-fcbarcelona-topbarcaenglish-rakutenuk/playlist.m3u8"
             },
             {
-                "name": "Inter Milan TV",
+                "name": "TVRI Sport",
                 "category": "Olahraga",
-                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJjO5evT_xQZ08eS5KUnmtDHjI92GF0f1zZgysIf29Z9750eOaGCb_nccC&s=10",
-                "url": "https://otte.live.fly.ww.aiv-cdn.net/lhr-nitro/live/clients/dash/enc/ekeomalvg7/out/v1/f63288f993e6470580623d7b9b45efb0/cenc.mpd|drmScheme=clearkey&drmLicense=7313f38125a3fefd00cf7d6567ff333b:87b49a0329febb10eef514fd0f044ee2"
+                "logo": "https://football-tribe.com/indonesia/wp-content/uploads/sites/10/2019/01/TVRI-Sport-HD.png",
+                "url": "https://ott-cdn2.tvri.go.id/live/eds/SportHD/hls/SportHD.m3u8"
             },
             {
-                "name": "MATCH TV RU",
+                "name": "RTM Sport (MY)",
                 "category": "Olahraga",
-                "logo": "https://unitedsenses.tv/wp-content/uploads/2017/04/Match_thumb_compi.png",
-                "url": "https://video.beeline.tv/live/d/channel317.isml/manifest-stb.mpd|drmScheme=clearkey&drmLicense=5e1c798b16d24dc8cbfc7819abf77b4d:4ba5d9aeba2239b425d1cf7b45474333"
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgJaHeglBK3dDTAzYlC-q7bpjx07F0OAYqWIS7Uzp3uZ7MOZVrFoIrnVQ&s=10",
+                "url": "https://d25tgymtnqzu8s.cloudfront.net/smil:sukan/manifest.mpd"
+            },
+            {
+                "name": "La Liga TV",
+                "category": "Olahraga",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuu1PVe57Y_MvyqIe9H6-uJ7ELcA8N2ilMpQ&usqp=CAU",
+                "url": "https://otte.live.fly.ww.aiv-cdn.net/dub-nitro/live/clients/dash/enc/k0duzgfejg/out/v1/70a50b1bda944628b8e7e66ab4069419/cenc.mpd|drmScheme=clearkey&drmLicense=620e51b82596475517a27aa425c52280:2b9ba811e9c5aeafc8ae1b71cdca4d6a"
+            },
+            {
+                "name": "Sportdigital",
+                "category": "Olahraga",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFY2t2NToLclN6hxqeMMkjYrpJ8USicYlFxX_KO_OGGmpIHyUSsOjQW23M&s=10",
+                "url": "https://otte.live.fly.ww.aiv-cdn.net/fra-nitro/live/clients/dash/enc/ssdefyhkkr/out/v1/cf01290cb7f64525bdf861580a016ca8/cenc.mpd|drmScheme=clearkey&drmLicense=0ad4080cdff8c60b1233b22087f0b340:285f129c5eca01dd08a5d5a14ad801c8"
             },
             {
                 "name": "Eurosport 1",
@@ -134,10 +122,16 @@
                 "url": "https://dash2.antik.sk/stream/nvidia_eurosport1/playlist_cenc.mpd|drmScheme=clearkey&drmLicense=11223344556677889900112233445566:4b80724d0ef86bcb2c21f7999d67739d"
             },
             {
-                "name": "Fancode 1",
+                "name": "Match TV RU",
                 "category": "Olahraga",
-                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpPBg6yrl692DIH0QAuxWPJOypVWziyFJgKR4WCnGsfOnhTx__4sjjyuoB&s=10",
-                "url": "https://a166aivottlinear-a.akamaihd.net/OTTB/sin-nitro/live/clients/dash/enc/inpyms8ezu/out/v1/1084d5c9a97a4c5b9f9554c88f486646/cenc.mpd|drmScheme=clearkey&drmLicense=065051b99bf5cf8d9a3bde5cbde6aaf9:214bd176832872339ce184338320f9a2"
+                "logo": "https://unitedsenses.tv/wp-content/uploads/2017/04/Match_thumb_compi.png",
+                "url": "https://video.beeline.tv/live/d/channel317.isml/manifest-stb.mpd|drmScheme=clearkey&drmLicense=5e1c798b16d24dc8cbfc7819abf77b4d:4ba5d9aeba2239b425d1cf7b45474333"
+            },
+            {
+                "name": "Telewebion Sport",
+                "category": "Olahraga",
+                "logo": "https://yt3.googleusercontent.com/WRlCLbVoxwvCqEc1LP9Z29dIayQ8RMDrrMutBQ2vb_zy5sDAgcDxOh3S0V76vsWEC9Nh5Yik=s900-c-k-c0x00ffffff-no-rj",
+                "url": "https://ncdn.telewebion.ir/sport1/live/playlist.m3u8"
             },
 
             // ==========================================
@@ -180,16 +174,34 @@
                 "url": "https://op-flashcon-digdayahd-1.dens.tv/h/h70/wedotv_movie.m3u8|User-Agent=Mozilla/5.0 (Linux; Android 11; SM-A307GN Build/RP1A.200720.012; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/107.0.5304.91 Mobile Safari/537.36"
             },
             {
-                "name": "Celestial Movies",
+                "name": "Run Time",
                 "category": "Film & Hiburan",
-                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBDDE-maQyY3kv82Fba4qeJKO-0DdRJCa_MN0KwSTSLcHi_6Nlralp0ik&s=10",
-                "url": "https://cors-proxy.wangzhishi.net/https://unifi-live2.secureswiftcontent.com/Content/DASH/Live/channel(Celestial)/master.mpd|drmScheme=clearkey&drmLicense=107e13b213a94a6cbb6d02c25653c083:044af5b9e0258e2d39437ee03365fd2d"
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQNspkOSEzplCaR9S8_u2HrL8bzdb3IlTl72w&usqp=CAU",
+                "url": "https://stream.ads.ottera.tv/playlist.m3u8?network_id=2649"
             },
             {
-                "name": "Zee Bioskop",
+                "name": "Run Time Romance",
                 "category": "Film & Hiburan",
-                "logo": "https://cdn.shortpixel.ai/spai/q_lossy+ret_img+to_webp/www.bizasialive.com/wp-content/uploads/2018/11/zeetvlogo001.jpg",
-                "url": "https://atemeshield1-voe.sysln.id/live/eds/ZeeBioskop/mediampd/ZeeBioskop.mpd|User-Agent=ExoPlayerDemo/2.15.1 (Linux; Android 13) ExoPlayerLib/2.15.1&drmScheme=clearkey&drmLicense=70d0197a8aca42589cf5df6daa576d86:ebd47832fd7251a09e3cc8eb36790ad5"
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQNspkOSEzplCaR9S8_u2HrL8bzdb3IlTl72w&usqp=CAU",
+                "url": "https://stream.ads.ottera.tv/playlist.m3u8?network_id=3056"
+            },
+            {
+                "name": "Watch Mojo",
+                "category": "Film & Hiburan",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsSQFCyUdS1dGfJ_YSK7-1gJ3hnGoM0eiIaQ&usqp=CAU",
+                "url": "https://watchmojo-1-us.tcl.wurl.tv/playlist.m3u8"
+            },
+            {
+                "name": "Fashion TV",
+                "category": "Film & Hiburan",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRy_HsEfOglUk5cgA1OxJfgU5ddqyoBFeKBpbWWgkheRaj23xB9GWA_K_iR&s=10",
+                "url": "https://ftv1.b-cdn.net/bfdbb576-83f7-11f0-9f89-0200170e3e04_1000028043_HLS/manifest.m3u8"
+            },
+            {
+                "name": "Lawak Central (Sooka)",
+                "category": "Film & Hiburan",
+                "logo": "https://assets.theedgemarkets.com/sooka_20210608113149_facebook-sookamalaysia.jpg",
+                "url": "https://b27a6dd8a86c3e4ba93fbae22aaaac64.pmqrop.channel-assembly.mediatailor.ap-southeast-1.amazonaws.com/v1/channel/FAST_3/dash.mpd"
             },
 
             // ==========================================
@@ -220,68 +232,68 @@
                 "url": "https://cdn-ue1-prod.tsv2.amagi.tv/linear/amg00426-littledotstudio-realwild-tcl/playlist.m3u8"
             },
             {
-                "name": "Dens Life & Style",
+                "name": "Travel & Taste (Sooka)",
                 "category": "Pengetahuan & Alam",
-                "logo": "https://media.licdn.com/dms/image/v2/C561BAQFyROPrzUY4pQ/company-background_10000/company-background_10000/0/1617852520781/pt_digdaya_duta_digital_cover?e=2147483647&v=beta&t=pp2ESKbrgQ8O7rFJFfLNskNfqN_yWny8TrgyBHcUajg",
-                "url": "http://op-group1-swiftservehd-1.dens.tv/h/h222/index.m3u8|User-Agent=Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1"
+                "logo": "https://assets.theedgemarkets.com/sooka_20210608113149_facebook-sookamalaysia.jpg",
+                "url": "https://b27a6dd8a86c3e4ba93fbae22aaaac64.pmqrop.channel-assembly.mediatailor.ap-southeast-1.amazonaws.com/v1/channel/FAST_5/dash.mpd"
             },
             {
-                "name": "Dens Food",
+                "name": "HGTV",
                 "category": "Pengetahuan & Alam",
-                "logo": "https://media.licdn.com/dms/image/v2/C561BAQFyROPrzUY4pQ/company-background_10000/company-background_10000/0/1617852520781/pt_digdaya_duta_digital_cover?e=2147483647&v=beta&t=pp2ESKbrgQ8O7rFJFfLNskNfqN_yWny8TrgyBHcUajg",
-                "url": "http://op-group1-swiftservehd-1.dens.tv/h/h221/index.m3u8|User-Agent=Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1"
+                "logo": "https://cdn.broadbandtvnews.com/wp-content/uploads/2019/07/14112631/HGTV-HD-KV-1.jpg",
+                "url": "https://starhub-307.tvsucker.workers.dev/bpk-tv/HGTV/output/manifest.mpd|drmScheme=clearkey&drmLicense=c1ac1cd0128240e18b68f337fe871b59:372c1435914f835639e2595c0670b0ed"
             },
 
             // ==========================================
-            // KATEGORI: ANAK-ANAK & KARTUN
+            // KATEGORI: ANAK-ANAK & ANIME
             // ==========================================
             {
                 "name": "ABC Kids",
-                "category": "Anak-Anak & Kartun",
+                "category": "Anak-Anak & Anime",
                 "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRlH6Kop5MWJ8q9eVLud8PTVMkE-IXMCF7G_Q&usqp=CAU",
                 "url": "https://c.mjh.nz/abc-kids.m3u8"
             },
             {
                 "name": "Baby Shark",
-                "category": "Anak-Anak & Kartun",
+                "category": "Anak-Anak & Anime",
                 "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDCYlY0VSx8Pwak7PFlGy6uzAz43wjzWkcew&usqp=CAU",
                 "url": "https://newidco-babysharktv-1-eu.rakuten.wurl.tv/playlist.m3u8"
             },
             {
                 "name": "Angry Birds TV",
-                "category": "Anak-Anak & Kartun",
+                "category": "Anak-Anak & Anime",
                 "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZkv2PAL7P_Khy-LRPODFfgFgtV9WbnDbBBxF6473QXxvEkvkviKffNuQ&s=10",
                 "url": "https://stream.ads.ottera.tv/playlist.m3u8?network_id=547"
             },
             {
                 "name": "PBS Kids",
-                "category": "Anak-Anak & Kartun",
+                "category": "Anak-Anak & Anime",
                 "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpX-edI5wUltMpNsvF7OwpFqTd-B4LLTA2YA&usqp=CAU",
                 "url": "https://2-fss-2.streamhoster.com/pl_140/amlst:200914-1298290/playlist.m3u8"
             },
             {
                 "name": "Kids Flix",
-                "category": "Anak-Anak & Kartun",
+                "category": "Anak-Anak & Anime",
                 "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKqTq07BpR8P-Ar3qaGlVFB9l9VL5OBYQGOl9BHmA5umZ5_cbiLhplMxA&s=10",
                 "url": "https://stream-us-east-1.getpublica.com/playlist.m3u8?network_id=50"
             },
             {
                 "name": "EBS Kid",
-                "category": "Anak-Anak & Kartun",
+                "category": "Anak-Anak & Anime",
                 "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStwp4jSmJaXhIcZGgcYkNFCqnjACJxc6xwZ4fH5tYy7XAb5SZBGrOMN5c&s=10",
                 "url": "https://ebsonair.ebs.co.kr/ebsufamilypc/familypc1m/playlist.m3u8"
             },
             {
-                "name": "Mentari TV",
-                "category": "Anak-Anak & Kartun",
-                "logo": "https://thumbor.prod.vidiocdn.com/Iqs6mheIjesM4cUEh_dUVIdV0jU=/filters:quality(70)/vidio-web-prod-livestreaming/uploads/livestreaming/image/8237/mentari-tv-b64c27.jpg",
-                "url": "https://tvratu.my.id/vid/index.mpd?id=8237"
+                "name": "Naruto TV (Pluto)",
+                "category": "Anak-Anak & Anime",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTGknQ_T4kVmRvDxLYO6V17IiNlNRYYT38X6g&usqp=CAU",
+                "url": "https://service-stitcher.clusters.pluto.tv/stitch/hls/channel/5ee92e72fb286e0007285fec/master.m3u8?HasBahCa.m3u8?advertisingId=&appName=web&appVersion=unknown&appStoreUrl=&architecture=&buildVersion=&clientTime=0&deviceDNT=0&deviceId=bff27170-6307-11eb-b3fa-019cb96f121b&deviceMake=Chrome&deviceModel=web&deviceType=web&deviceVersion=unknown&includeExtendedEvents=false&sid=d1372261-d71b-427e-b9b7-e0afe4a6974b&userId=&serverSideAds=true"
             },
             {
-                "name": "Cbeebies",
-                "category": "Anak-Anak & Kartun",
-                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHmtToYz9Ri1Lky7PxyBZls4cUWuVYktmhqNRfUXPYjSm-hwCFeghrUxM&s=10",
-                "url": "https://d2xz2v5wuvgur6.cloudfront.net/out/v1/2a5668fb3b9f4e34ab7c02cdc6ef56db/index.mpd|User-Agent=Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1&drmScheme=clearkey&drmLicense=736777e5823249849d71a7d41ddc35aa:f831235372e07e24fb70f7336291c549"
+                "name": "One Piece TV (Pluto)",
+                "category": "Anak-Anak & Anime",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToIPzzu5pgxL01gZAAGRlatHf3YCqSlC0gQ3SBA0HFjrfhT2dUoZ_84V7K&s=10",
+                "url": "https://service-stitcher.clusters.pluto.tv/stitch/hls/channel/5ff4b9ccf938f8000779eb99/master.m3u8?HasBahCa.m3u8?advertisingId=&appName=web&appVersion=unknown&appStoreUrl=&architecture=&buildVersion=&clientTime=0&deviceDNT=0&deviceId=79573c14-77dd-11eb-a61c-2f38487b60c0&deviceMake=Chrome&deviceModel=web&deviceType=web&deviceVersion=unknown&includeExtendedEvents=false&sid=c4c4d3a3-dc88-49b4-9fda-30049d73b3f2&userId=&serverSideAds=true"
             }
         ];
 
@@ -372,7 +384,6 @@
                 player.configure(shakaConfig);
 
                 // === MESIN PROXY ZYNFX ===
-                // Akan diaktifkan otomatis jika channel mewajibkan User-Agent tertentu
                 player.getNetworkingEngine().clearAllRequestFilters();
                 
                 if (needsProxy) {
