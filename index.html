@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dimas TV - Ultimate Premium</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f0f0f; color: white; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 330px; background: #1a1a1a; overflow-y: auto; border-right: 1px solid #2a2a2a; padding: 15px; box-sizing: border-box; }
+        .sidebar::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #e50914; border-radius: 4px; }
+        h2 { text-align: center; border-bottom: 2px solid #e50914; padding-bottom: 10px; margin-top: 0; font-size: 24px; color: #fff; text-transform: uppercase; letter-spacing: 2px; }
+        .category-title { margin: 25px 0 10px 0; font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #333; padding-bottom: 5px; font-weight: bold; }
+        .channel-card { display: flex; align-items: center; padding: 10px; background: #242424; margin-bottom: 8px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; border: 1px solid transparent; }
+        .channel-card:hover { background: #333; border-color: #e50914; transform: translateX(5px); box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+        .channel-card.active { background: #e50914; border-color: #ff3333; }
+        .channel-logo { width: 60px; height: 40px; object-fit: contain; background: #fff; border-radius: 4px; margin-right: 12px; padding: 2px; }
+        .channel-name { font-weight: 600; font-size: 14px; color: #eee; }
+        .main { flex-grow: 1; display: flex; flex-direction: column; background: #000; }
+        .video-container { flex-grow: 1; position: relative; display: flex; justify-content: center; align-items: center; }
+        video { width: 100%; height: 100%; object-fit: contain; outline: none; }
+        #status { padding: 15px; background: #151515; text-align: center; font-weight: bold; border-top: 1px solid #2a2a2a; color: #00ff88; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        .error-text { color: #ff3333 !important; }
+        .proxy-text { color: #ffb700 !important; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>📺 DIMAS TV</h2>
+        <div id="channel-list"></div>
+    </div>
+
+    <div class="main">
+        <div class="video-container">
+            <video id="videoPlayer" controls autoplay></video>
+        </div>
+        <div id="status">Pilih channel di samping untuk mulai menonton...</div>
+    </div>
+
+    <script>
+        // DATA PREMIUM & STABIL (ClearKey + No DRM + Proxy Support)
+        const STREAM_URLS = [
+            // ==========================================
+            // KATEGORI: TV NASIONAL
+            // ==========================================
+            {
+                "name": "TVRI Nasional",
+                "category": "TV Nasional",
+                "logo": "https://thumbor.prod.vidiocdn.com/ITgomqe4r80G_YlUJO-ZLBdgztM=/filters:quality(70)/vidio-web-prod-livestreaming/uploads/livestreaming/image/6441/tvri-tv-stream-f6cbb3.jpg",
+                "url": "https://ott-balancer.tvri.go.id/live/eds/Nasional/hls/Nasional.m3u8"
+            },
+            {
+                "name": "Metro TV",
+                "category": "TV Nasional",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2kPbkIp9idNFIcbHt1lxXr6FKQQUpRzrisw&usqp=CAU",
+                "url": "https://op-flashcon-digdayahd-1.dens.tv/h/h12/index.m3u8"
+            },
+            {
+                "name": "BTV (Berita Satu)",
+                "category": "TV Nasional",
+                "logo": "https://thumbor.prod.vidiocdn.com/4HBTMNO-_vri_NmmDniraoabE4c=/filters:quality(70)/vidio-web-prod-livestreaming/uploads/livestreaming/image/6165/beritasatu-e7ed52.jpg",
+                "url": "https://op-flashcon-digdayaxenkoda.dens.tv/e6550891-6bef-42e1-bab9-13bf4af739ce/stream.m3u8"
+            },
+
+            // ==========================================
+            // KATEGORI: SPORTS
+            // ==========================================
+            {
+                "name": "Bein Sport 1",
+                "category": "Olahraga",
+                "logo": "https://assets-us-01.kc-usercontent.com/31dbcbc6-da4c-0033-328a-d7621d0fa726/1318873e-8501-4f79-bb69-182d741cf9ad/beIN%20SPORTS%20Portada.jpg",
+                "url": "https://starhub-307.tvsucker.workers.dev/bpk-tv/BeINSportsHD/output/manifest.mpd|drmScheme=clearkey&drmLicense=4c4b013320654277a19df8f14b80b6c5:4751e8a9d798c2a1e1c581f179771f48"
+            },
+            {
+                "name": "SPOTV 1",
+                "category": "Olahraga",
+                "logo": "https://thumbor.prod.vidiocdn.com/MrWnk04A5i5ak4Ill5aBLnTqC6c=/filters:quality(70)/vidio-web-prod-livestreaming/uploads/livestreaming/image/17139/spotv-c18c69.jpg",
+                "url": "https://starhub-307.tvsucker.workers.dev/bpk-tv/SPOTVNEW/output/manifest.mpd|drmScheme=clearkey&drmLicense=a9b08ce3328f467dac1c6ff03b4cf358:499e104ca0c44ebc78d601094001cd67"
+            },
+            {
+                "name": "Real Madrid TV",
+                "category": "Olahraga",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSNxBCXUOMNAi9BbQDpxxyazAD7YsW0n7lg-3KH6Lhh4a0AC8rGBxwwG5G-&s=10",
+                "url": "https://rmtv.akamaized.net/hls/live/2043154/rmtv-en-web/master.m3u8"
+            },
+
+            // ==========================================
+            // KATEGORI: FILM (MOVIES)
+            // ==========================================
+            {
+                "name": "HBO",
+                "category": "Film",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsJCt8flc4ECpgPntHKPzTcQzozpbVEVt3Gg&usqp=CAU",
+                "url": "https://cors-proxy.wangzhishi.net/https://unifi-live2.secureswiftcontent.com/Content/DASH/Live/channel(HBO)/master.mpd|drmScheme=clearkey&drmLicense=7ad888ee5dd6496a8c2c77a6284ff936:718716c435914901d2551930a256974e"
+            },
+            {
+                "name": "Cinemax",
+                "category": "Film",
+                "logo": "https://i.vimeocdn.com/video/381301582-e88666d059aa981f250d5868c1dcc87aa99aaa3e0042b02a5a2be3b44e3d8f03-d?f=webp",
+                "url": "https://cors-proxy.wangzhishi.net/https://unifi-live2.secureswiftcontent.com/Content/DASH/Live/channel(Cinemax)/master.mpd|drmScheme=clearkey&drmLicense=b83391c0f7c64142baa326b101c9f3d4:1ea53c247b115d6c3bb37a4d0485a37c"
+            },
+            {
+                "name": "Warner Bros",
+                "category": "Film",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxW6pbaRlYj6_E7HLcTfGhfMHFuO4n-bYLAa1acIf4tiFnUCL4rZ7MKFYi&s=10",
+                "url": "https://cors-proxy.wangzhishi.net/https://unifi-live2.secureswiftcontent.com/Content/DASH/Live/channel(WarnerTV)/master.mpd|drmScheme=clearkey&drmLicense=6f4ea7be45af4275a8d76845fb19dba5:b02208ea61a2cdbf5b09440bc3157f04"
+            },
+            {
+                "name": "Rock Action",
+                "category": "Film",
+                "logo": "https://thumbor.prod.vidiocdn.com/1bHJE8jzAfdHr_zMSs216Ya-pGk=/filters:quality(70)/vidio-web-prod-livestreaming/uploads/livestreaming/image/8121/rock-action-3cc936.jpg",
+                "url": "https://d84q7nw4qf3j3.cloudfront.net/out/v1/010bb28c19b64975b318d3b00f58b18b/index.mpd|User-Agent=Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1&drmScheme=clearkey&drmLicense=d4126f7fd6134adfbedb3a0daefd7657:920f1adcca60069c887da7f1d225607d"
+            },
+            {
+                "name": "Movie Sphere",
+                "category": "Film",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-_Y4gs8EO8rIRq54qmUgAEpByiP9m1_yiDI2XEa_PvHzTztocFOiqtGfP&s=10",
+                "url": "https://moviesphereuk-samsunguk.amagi.tv/playlist.m3u8"
+            },
+
+            // ==========================================
+            // KATEGORI: HIBURAN, PENGETAHUAN & ANAK
+            // ==========================================
+            {
+                "name": "Animax",
+                "category": "Hiburan & Anak",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLPk7mD7E4stFosi9QIJAWtG7dxuwsGbmgKEr4ixcfZLkFDxLd2gTUuE6t&s=10",
+                "url": "http://d84q7nw4qf3j3.cloudfront.net/out/v1/ab3ef0f0e4144c3c8b7e60f1873a3bcc/index.mpd|User-Agent=Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1&drmScheme=clearkey&drmLicense=6f309276a94e45be89a8860159456e84:3fe2eec12885264556ca4e29aa6c0c40"
+            },
+            {
+                "name": "Nickelodeon",
+                "category": "Hiburan & Anak",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdUOnogH9yt8uZ11EKFLVr1x4_q2v2E_CX_R8E4-blt4WELNq4OE9HTy4&s=10",
+                "url": "https://d2tjypxxy769fn.cloudfront.net/out/v1/3fe6d9eb97ed455c942eb8d3d1c2c2e8/index.mpd|User-Agent=Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1&drmScheme=clearkey&drmLicense=676b60c2b84b49b6b316207a590203e4:da9878a96062ea105895f310e052fa7b"
+            },
+            {
+                "name": "TLC",
+                "category": "Hiburan & Anak",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSj70Qkt7yH8MHDgSYRIl2Y2yKwWE20A29A5YhWhQPOEUyqY_Fp_77zIt4&s=10",
+                "url": "https://atemeshield1-voe.sysln.id/live/eds/TLCHD/mediampd/TLCHD.mpd|User-Agent=ExoPlayerDemo/2.15.1 (Linux; Android 13) ExoPlayerLib/2.15.1&drmScheme=clearkey&drmLicense=abac9e0bf2b448f8871145829c68a7fd:eebd1a86367df6c2c4aad70b7a6165a9"
+            },
+            {
+                "name": "Animal Planet",
+                "category": "Hiburan & Anak",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRmXSrXRjpFDmM0vv8yWFMWPSfjewcZ50CiWl24x_6B2qaRDlGojcVbKlCg&s=10",
+                "url": "https://s2129134.cdn.mytvnet.vn/pkg20/live_dzones/ap.smil/manifest.mpd|drmScheme=clearkey&drmLicense=ec6f072c7125377a9bc0ae61598095f4:1d5388e0781415ebcec9914f5ad75875"
+            },
+            {
+                "name": "Discovery Asia",
+                "category": "Hiburan & Anak",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQgLiwkOnQ9cZzUXfpkRAJj7WGbZCFMAwxXvA&usqp=CAU",
+                "url": "https://cdn4.skygo.mn/live/disk1/Discovery_Asia/HLSv3-FTA/Discovery_Asia.m3u8"
+            }
+        ];
+
+        const videoEl = document.getElementById('videoPlayer');
+        const statusEl = document.getElementById('status');
+        let player;
+        let currentActiveCard = null;
+
+        function initApp() {
+            shaka.polyfill.installAll();
+            if (shaka.Player.isBrowserSupported()) {
+                player = new shaka.Player(videoEl);
+                player.configure({
+                    streaming: { retryParameters: { maxAttempts: 3, baseDelay: 1000 } }
+                });
+                player.addEventListener('error', onErrorEvent);
+                renderChannelList();
+            } else {
+                alert('Browser tidak mendukung Shaka Player.');
+            }
+        }
+
+        function onErrorEvent(event) {
+            const error = event.detail;
+            console.error('Shaka Error:', error.code, error);
+            statusEl.innerHTML = `❌ Error [${error.code}]: Stream terputus / diblokir CORS / DRM Error.`;
+            statusEl.className = 'error-text';
+        }
+
+        function renderChannelList() {
+            const listDiv = document.getElementById('channel-list');
+            const categories = {};
+            
+            STREAM_URLS.forEach(ch => {
+                if (!categories[ch.category]) categories[ch.category] = [];
+                categories[ch.category].push(ch);
+            });
+
+            for (const [catName, channels] of Object.entries(categories)) {
+                const title = document.createElement('div');
+                title.className = 'category-title';
+                title.innerText = catName;
+                listDiv.appendChild(title);
+
+                channels.forEach(channel => {
+                    const card = document.createElement('div');
+                    card.className = 'channel-card';
+                    card.innerHTML = `<img class="channel-logo" src="${channel.logo}"><div class="channel-info"><span class="channel-name">${channel.name}</span></div>`;
+                    
+                    card.onclick = () => {
+                        if (currentActiveCard) currentActiveCard.classList.remove('active');
+                        card.classList.add('active');
+                        currentActiveCard = card;
+                        playStream(channel.name, channel.url);
+                    };
+                    listDiv.appendChild(card);
+                });
+            }
+        }
+
+        async function playStream(channelName, rawData) {
+            statusEl.className = '';
+            statusEl.innerHTML = `⏳ Menghubungkan ke <b>${channelName}</b>...`;
+            
+            try {
+                const [streamUrl, paramsStr] = rawData.split('|');
+                const params = new URLSearchParams(paramsStr || '');
+                const drmScheme = params.get('drmScheme');
+                const drmLicense = params.get('drmLicense');
+                
+                // Mendeteksi kebutuhan Proxy Zynfx berdasarkan User-Agent
+                const reqUa = params.get('User-Agent') || params.get('user-agent') || '';
+                const reqRef = params.get('Referer') || params.get('referer') || '';
+                const needsProxy = reqUa !== '' || reqRef !== '';
+
+                const shakaConfig = { drm: { clearKeys: {}, servers: {} } };
+
+                // Memasang gembok lisensi
+                if (drmScheme === 'clearkey' && drmLicense) {
+                    const keys = {};
+                    drmLicense.split(',').forEach(pair => {
+                        const [kid, key] = pair.split(':');
+                        if (kid && key) keys[kid] = key;
+                    });
+                    shakaConfig.drm.clearKeys = keys;
+                }
+
+                player.configure(shakaConfig);
+
+                // === MESIN PROXY ZYNFX ===
+                player.getNetworkingEngine().clearAllRequestFilters();
+                
+                if (needsProxy) {
+                    statusEl.innerHTML = `🕵️‍♂️ Memanggil Agen Zynfx untuk <b>${channelName}</b>...`;
+                    statusEl.className = 'proxy-text';
+                    
+                    player.getNetworkingEngine().registerRequestFilter((type, request) => {
+                        // Jangan gunakan proxy untuk mengambil kunci gembok DRM
+                        if (type == shaka.net.NetworkingEngine.RequestType.LICENSE) return;
+
+                        const originalUri = request.uris[0];
+                        let proxyUrl = `https://zynfx.eu.org/api/proxy?url=${encodeURIComponent(originalUri)}`;
+                        if (reqUa) proxyUrl += `&ua=${encodeURIComponent(reqUa)}`;
+                        if (reqRef) proxyUrl += `&referer=${encodeURIComponent(reqRef)}`;
+
+                        request.uris[0] = proxyUrl;
+                    });
+                }
+                // =========================
+
+                await player.load(streamUrl);
+                
+                if (needsProxy) {
+                    statusEl.innerHTML = `✅ Zynfx sukses menyiarkan: <b>${channelName}</b>`;
+                    statusEl.className = 'proxy-text';
+                } else {
+                    statusEl.innerHTML = `✅ Sedang menonton: <b>${channelName}</b>`;
+                    statusEl.className = '';
+                }
+                
+            } catch (error) {
+                console.error('Gagal memuat stream:', error);
+                statusEl.innerHTML = `❌ Gagal memutar <b>${channelName}</b>.`;
+                statusEl.className = 'error-text';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
+
