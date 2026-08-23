@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dimas TV - Auto Load Database</title>
+    <title>Dimas TV - Ultimate Search & Proxy</title>
     <!-- Library Shaka Player -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
     
@@ -12,11 +12,21 @@
 
     <style>
         body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f0f0f; color: white; display: flex; height: 100vh; overflow: hidden; }
-        .sidebar { width: 350px; background: #1a1a1a; overflow-y: auto; border-right: 1px solid #2a2a2a; padding: 15px; box-sizing: border-box; }
+        .sidebar { width: 350px; background: #1a1a1a; overflow-y: auto; border-right: 1px solid #2a2a2a; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; }
         .sidebar::-webkit-scrollbar { width: 6px; }
         .sidebar::-webkit-scrollbar-thumb { background: #e50914; border-radius: 4px; }
-        h2 { text-align: center; border-bottom: 2px solid #e50914; padding-bottom: 10px; margin-top: 0; font-size: 24px; color: #fff; text-transform: uppercase; letter-spacing: 2px; }
-        .category-title { margin: 25px 0 10px 0; font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #333; padding-bottom: 5px; font-weight: bold; }
+        h2 { text-align: center; border-bottom: 2px solid #e50914; padding-bottom: 10px; margin-top: 0; font-size: 24px; color: #fff; text-transform: uppercase; letter-spacing: 2px; flex-shrink: 0; }
+        
+        /* FITUR SEARCH BAR */
+        .search-container { margin-bottom: 15px; flex-shrink: 0; }
+        .search-box { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; font-size: 14px; box-sizing: border-box; outline: none; transition: 0.3s; }
+        .search-box:focus { border-color: #e50914; box-shadow: 0 0 8px rgba(229, 9, 20, 0.5); }
+        
+        .channel-list-container { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
+        .channel-list-container::-webkit-scrollbar { width: 4px; }
+        .channel-list-container::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+
+        .category-title { margin: 20px 0 10px 0; font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #333; padding-bottom: 5px; font-weight: bold; }
         .channel-card { display: flex; align-items: center; padding: 10px; background: #242424; margin-bottom: 8px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; border: 1px solid transparent; }
         .channel-card:hover { background: #333; border-color: #e50914; transform: translateX(5px); box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
         .channel-card.active { background: #e50914; border-color: #ff3333; }
@@ -30,13 +40,20 @@
         #status { padding: 15px; background: #151515; text-align: center; font-weight: bold; border-top: 1px solid #2a2a2a; color: #00ff88; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
         .error-text { color: #ff3333 !important; }
         .proxy-text { color: #ffb700 !important; }
+        .not-found { text-align: center; color: #888; font-size: 14px; margin-top: 20px; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
         <h2>📺 DIMAS TV</h2>
-        <div id="channel-list"></div>
+        
+        <!-- KOTAK PENCARIAN -->
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-box" placeholder="🔍 Cari channel atau liga..." onkeyup="filterChannels()">
+        </div>
+
+        <div id="channel-list" class="channel-list-container"></div>
     </div>
 
     <div class="main">
@@ -51,6 +68,7 @@
         const statusEl = document.getElementById('status');
         let player;
         let currentActiveCard = null;
+        let allChannelsData = []; // Menyimpan semua data untuk fitur pencarian
 
         function initApp() {
             shaka.polyfill.installAll();
@@ -83,18 +101,18 @@
                 return;
             }
 
-            let processedChannels = [];
+            allChannelsData = []; // Kosongkan array
 
             // 1. Ekstrak Channel TV Biasa
             if(STREAM_URLS.channels) {
                 STREAM_URLS.channels.forEach(ch => {
                     if (ch.servers && ch.servers.length > 0) {
-                        processedChannels.push({
+                        allChannelsData.push({
                             name: ch.name,
                             category: ch.category || "Uncategorized",
                             logo: ch.logo || "https://cdn-icons-png.flaticon.com/512/716/716429.png",
                             serverName: ch.servers[0].name,
-                            url: ch.servers[0].url // Otomatis ambil server pertama
+                            url: ch.servers[0].url
                         });
                     }
                 });
@@ -104,9 +122,9 @@
             if(STREAM_URLS.events) {
                 STREAM_URLS.events.forEach(ev => {
                     if (ev.servers && ev.servers.length > 0) {
-                        processedChannels.push({
+                        allChannelsData.push({
                             name: ev.match,
-                            category: "⚽ JADWAL LIVE: " + (ev.league || "Pertandingan"),
+                            category: "⚽ LIVE: " + (ev.league || "Pertandingan"),
                             logo: "https://cdn-icons-png.flaticon.com/512/1165/1165183.png",
                             serverName: ev.servers[0].name,
                             url: ev.servers[0].url
@@ -115,18 +133,36 @@
                 });
             }
 
-            if(processedChannels.length > 0) {
-                renderToScreen(processedChannels);
-                statusEl.innerHTML = `✅ Sukses memuat ${processedChannels.length} stream dari file b_script!`;
+            if(allChannelsData.length > 0) {
+                renderToScreen(allChannelsData);
+                statusEl.innerHTML = `✅ Sukses memuat ${allChannelsData.length} stream!`;
             } else {
                 statusEl.innerHTML = `⚠️ File terbaca, tapi tidak ada channel di dalamnya.`;
             }
+        }
+
+        // FUNGSI PENCARIAN (LIVE SEARCH)
+        function filterChannels() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            
+            // Saring berdasarkan nama channel ATAU nama kategori
+            const filteredData = allChannelsData.filter(item => 
+                item.name.toLowerCase().includes(query) || 
+                item.category.toLowerCase().includes(query)
+            );
+
+            renderToScreen(filteredData);
         }
 
         function renderToScreen(dataList) {
             const listDiv = document.getElementById('channel-list');
             listDiv.innerHTML = '';
             
+            if(dataList.length === 0) {
+                listDiv.innerHTML = `<div class="not-found">Pencarian tidak ditemukan 😢</div>`;
+                return;
+            }
+
             const categories = {};
             dataList.forEach(item => {
                 if (!categories[item.category]) categories[item.category] = [];
@@ -198,7 +234,6 @@
                     statusEl.className = 'proxy-text';
                     
                     player.getNetworkingEngine().registerRequestFilter((type, request) => {
-                        // Jangan gunakan proxy untuk License DRM
                         if (type == shaka.net.NetworkingEngine.RequestType.LICENSE) return;
 
                         const originalUri = request.uris[0];
