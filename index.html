@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dimas TV - Proxy Edition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #121212; color: white; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 320px; background: #1e1e1e; overflow-y: auto; border-right: 1px solid #333; padding: 15px; box-sizing: border-box; }
+        .sidebar::-webkit-scrollbar { width: 8px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+        .main { flex-grow: 1; display: flex; flex-direction: column; }
+        .video-container { flex-grow: 1; background: #000; position: relative; }
+        video { width: 100%; height: 100%; object-fit: contain; outline: none; }
+        h2 { text-align: center; border-bottom: 2px solid #e50914; padding-bottom: 10px; margin-top: 0; font-size: 22px; color: #fff; }
+        .channel-card { display: flex; align-items: center; padding: 10px; background: #2a2a2a; margin-bottom: 8px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; }
+        .channel-card:hover { background: #333; border-color: #e50914; transform: translateX(5px); }
+        .channel-logo { width: 55px; height: 38px; object-fit: contain; background: #fff; border-radius: 4px; margin-right: 12px; padding: 2px; }
+        .channel-name { font-weight: bold; font-size: 14px; }
+        #status { padding: 15px; background: #1a1a1a; text-align: center; font-weight: bold; border-top: 1px solid #333; color: #00ff88; font-size: 15px; }
+        .error-text { color: #ff3333 !important; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>📺 DIMAS TV</h2>
+        <div id="channel-list"></div>
+    </div>
+
+    <div class="main">
+        <div class="video-container">
+            <video id="videoPlayer" controls autoplay></video>
+        </div>
+        <div id="status">Pilih channel untuk mengetes Jembatan Proxy...</div>
+    </div>
+
+    <script>
+        // Data Uji Coba: Channel yang gagal karena butuh penyamaran User-Agent
+        const STREAM_URLS = [
+            {
+                "name": "TRANS 7 (Proxy Test)",
+                "logo": "https://thumbor.prod.vidiocdn.com/y2EK0E-_czvxzROVu4AMCuywmCw=/filters:quality(70)/vidio-web-prod-livestreaming/uploads/livestreaming/image/734/trans7-tv-stream-b793ab.jpg",
+                "url": "https://video.detik.com/trans7/smil:trans7.smil/playlist.m3u8|User-Agent=Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1"
+            },
+            {
+                "name": "TRANS TV (Proxy Test)",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS1LAR1UUsYqpBTkO5W4bnL-bWT3V5bReOiIA&usqp=CAU",
+                "url": "https://video.detik.com/transtv/smil:transtv.smil/playlist.m3u8|User-Agent=Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1"
+            },
+            {
+                "name": "CNN Indonesia (Proxy Test)",
+                "logo": "https://cdn.cnnindonesia.com/cnnid/images/Logo-CNN-Indonesia-Peta-Indonesia.jpg?v=8.3.1",
+                "url": "https://live.cnnindonesia.com/livecnn/smil:cnntv.smil/chunklist.m3u8|User-Agent=Mozilla/5.0 (Linux; Android 11; SM-A307GN Build/RP1A.200720.012; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/107.0.5304.91 Mobile Safari/537.36"
+            }
+        ];
+
+        const videoEl = document.getElementById('videoPlayer');
+        const statusEl = document.getElementById('status');
+        let player;
+
+        function initApp() {
+            shaka.polyfill.installAll();
+            if (shaka.Player.isBrowserSupported()) {
+                player = new shaka.Player(videoEl);
+                player.addEventListener('error', (e) => {
+                    console.error('Shaka Error:', e.detail);
+                    statusEl.innerHTML = `❌ Error [${e.detail.code}]: Gagal memuat stream.`;
+                    statusEl.className = 'error-text';
+                });
+                renderChannelList();
+            }
+        }
+
+        function renderChannelList() {
+            const listDiv = document.getElementById('channel-list');
+            STREAM_URLS.forEach(channel => {
+                const card = document.createElement('div');
+                card.className = 'channel-card';
+                card.innerHTML = `<img class="channel-logo" src="${channel.logo}"><div class="channel-info"><span class="channel-name">${channel.name}</span></div>`;
+                card.onclick = () => playStream(channel.name, channel.url);
+                listDiv.appendChild(card);
+            });
+        }
+
+        async function playStream(channelName, rawData) {
+            statusEl.className = '';
+            statusEl.innerHTML = `⏳ Memanggil agen Zynfx untuk <b>${channelName}</b>...`;
+            
+            try {
+                const [streamUrl, paramsStr] = rawData.split('|');
+                const params = new URLSearchParams(paramsStr || '');
+                const drmScheme = params.get('drmScheme');
+                const drmLicense = params.get('drmLicense');
+                
+                // Ekstrak identitas palsu yang diminta
+                const reqUa = params.get('User-Agent') || params.get('user-agent') || '';
+                const reqRef = params.get('Referer') || params.get('referer') || '';
+
+                const shakaConfig = { drm: { clearKeys: {}, servers: {} } };
+
+                if (drmScheme === 'clearkey' && drmLicense) {
+                    const keys = {};
+                    drmLicense.split(',').forEach(pair => {
+                        const [kid, key] = pair.split(':');
+                        if (kid && key) keys[kid] = key;
+                    });
+                    shakaConfig.drm.clearKeys = keys;
+                }
+
+                player.configure(shakaConfig);
+
+                // === MESIN PEMBELOK KE PROXY ZYNFX ===
+                player.getNetworkingEngine().clearAllRequestFilters();
+                player.getNetworkingEngine().registerRequestFilter((type, request) => {
+                    // Jangan belokkan request gembok DRM
+                    if (type == shaka.net.NetworkingEngine.RequestType.LICENSE) return;
+
+                    const originalUri = request.uris[0];
+                    
+                    // Bungkus URL asli ke dalam alamat Zynfx
+                    let proxyUrl = `https://zynfx.eu.org/api/proxy?url=${encodeURIComponent(originalUri)}`;
+                    if (reqUa) proxyUrl += `&ua=${encodeURIComponent(reqUa)}`;
+                    if (reqRef) proxyUrl += `&referer=${encodeURIComponent(reqRef)}`;
+
+                    request.uris[0] = proxyUrl;
+                });
+                // =======================================
+
+                await player.load(streamUrl);
+                statusEl.innerHTML = `✅ Sukses! Zynfx sedang menyiarkan: <b>${channelName}</b>`;
+            } catch (error) {
+                console.error('Error load:', error);
+                statusEl.innerHTML = `❌ Gagal memutar <b>${channelName}</b>.`;
+                statusEl.className = 'error-text';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
+
