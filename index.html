@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dimas TV - Streaming Portal</title>
+    <!-- Library Shaka Player -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #121212; color: white; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 320px; background: #1e1e1e; overflow-y: auto; border-right: 1px solid #333; padding: 15px; box-sizing: border-box; }
+        .sidebar::-webkit-scrollbar { width: 8px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+        .main { flex-grow: 1; display: flex; flex-direction: column; }
+        .video-container { flex-grow: 1; background: #000; position: relative; }
+        video { width: 100%; height: 100%; object-fit: contain; outline: none; }
+        h2 { text-align: center; border-bottom: 2px solid #e50914; padding-bottom: 10px; margin-top: 0; font-size: 24px; color: #fff; text-transform: uppercase; letter-spacing: 2px; }
+        
+        /* Grup Kategori */
+        .category-title { margin: 20px 0 10px 0; font-size: 14px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        
+        /* Kartu Channel */
+        .channel-card { display: flex; align-items: center; padding: 10px; background: #2a2a2a; margin-bottom: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
+        .channel-card:hover { background: #333; border-color: #e50914; transform: translateX(5px); }
+        .channel-logo { width: 60px; height: 40px; object-fit: contain; background: #fff; border-radius: 4px; margin-right: 12px; padding: 2px; }
+        .channel-info { display: flex; flex-direction: column; }
+        .channel-name { font-weight: bold; font-size: 14px; color: #fff; }
+        
+        #status { padding: 15px; background: #1a1a1a; text-align: center; font-weight: bold; border-top: 1px solid #333; color: #00ff88; font-size: 16px; }
+        .error-text { color: #ff3333 !important; }
+    </style>
+</head>
+<body>
+
+    <!-- DAFTAR CHANNEL (SIDEBAR) -->
+    <div class="sidebar">
+        <h2>📺 DIMAS TV</h2>
+        <div id="channel-list"></div>
+    </div>
+
+    <!-- PEMUTAR VIDEO (MAIN) -->
+    <div class="main">
+        <div class="video-container">
+            <video id="videoPlayer" controls autoplay></video>
+        </div>
+        <div id="status">Pilih channel di samping untuk mulai menonton...</div>
+    </div>
+
+    <script>
+        // 1. DATABASE CHANNEL (Diambil dari file aslimu - Prioritas ClearKey & No DRM)
+        const STREAM_URLS = [
+            // Kategori: TV Indonesia
+            {
+                "name": "Indosiar",
+                "category": "TV Indonesia",
+                "logo": "https://thumbor.prod.vidiocdn.com/e-tiJFPZKI4QjhxAHzp_5foCkGE=/filters:quality(70)/vidio-web-prod-livestreaming/uploads/livestreaming/image/205/indosiar-d9a3d0.jpg",
+                "url": "https://vidsemar.pages.dev/terraluna/205.mpd|drmScheme=clearkey&drmLicense=f6b8e18314b60c5fbf131ff094d0f506:c6c0c99ac927ac2d9728e1fcbe618cf4,122f71256201ba13e0cc26a88ad86ae7:25bbe7943964f5208f29bc8d1c991460,9b62f1b96fbb7da6782061dca7158481:1f1cf255f6aed03a22250bf69b00b20d"
+            },
+            {
+                "name": "Moji",
+                "category": "TV Indonesia",
+                "logo": "https://thumbor.prod.vidiocdn.com/bwUEILb_i5ngA1tmC0WaTOP9gCc=/filters:quality(70)/vidio-web-prod-livestreaming/uploads/livestreaming/image/206/moji-a5bd3e.jpg",
+                "url": "https://d2xz2v5wuvgur6.cloudfront.net/out/v1/2f1c4190dcf045c9aafc447d54ef7c91/index.mpd|drmScheme=clearkey&drmLicense=22bd0016090143f795a275629a6e7a0a:cae11accebe3ca7535141d35f4d41a1d"
+            },
+            {
+                "name": "GTV",
+                "category": "TV Indonesia",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbDMgJtVP-MkovwzvIgobp0_ZgP57prIIRyA&usqp=CAU",
+                "url": "https://d2tjypxxy769fn.cloudfront.net/out/v1/b8b9b1d5f80f45649b4a3619291551ab/index.mpd|drmScheme=clearkey&drmLicense=036e85de0bb448eeb21d39ab300da48e:4c6f9b15dfab2a169b2b78a498c4d77d"
+            },
+            {
+                "name": "TRANS 7",
+                "category": "TV Indonesia",
+                "logo": "https://thumbor.prod.vidiocdn.com/y2EK0E-_czvxzROVu4AMCuywmCw=/filters:quality(70)/vidio-web-prod-livestreaming/uploads/livestreaming/image/734/trans7-tv-stream-b793ab.jpg",
+                "url": "https://video.detik.com/trans7/smil:trans7.smil/playlist.m3u8"
+            },
+            
+            // Kategori: TV SPORT
+            {
+                "name": "SPOTV 1",
+                "category": "TV SPORT",
+                "logo": "https://thumbor.prod.vidiocdn.com/MrWnk04A5i5ak4Ill5aBLnTqC6c=/filters:quality(70)/vidio-web-prod-livestreaming/uploads/livestreaming/image/17139/spotv-c18c69.jpg",
+                "url": "https://aspaltvpasti.top/Allinone/17139.mpd|drmScheme=clearkey&drmLicense=8d49b45de7ba8c8dfbd1fe04b874be34:b4f813a1e820bc55dbef9f2540adf49f"
+            },
+            {
+                "name": "Bein Sport 1",
+                "category": "TV SPORT",
+                "logo": "https://assets-us-01.kc-usercontent.com/31dbcbc6-da4c-0033-328a-d7621d0fa726/1318873e-8501-4f79-bb69-182d741cf9ad/beIN%20SPORTS%20Portada.jpg?ver=03-06-2025?w=3840&q=75",
+                "url": "https://cors-proxy.wangzhishi.net/https://unifi-live2.secureswiftcontent.com/Content/DASH/Live/channel(Bein1)/master.mpd|drmScheme=clearkey&drmLicense=d48b6088253c443eb94d27cb7828f707:e9776141f9e949273a072b0e035070ab"
+            },
+            {
+                "name": "Champions TV 3",
+                "category": "TV SPORT",
+                "logo": "https://cdn0-production-images-kly.akamaized.net/si4Z12-cK8zODt65n5FoNJ03jtc=/1200x675/smart/filters:quality(75):strip_icc():format(jpeg)/kly-media-production/medias/2907592/original/056844200_1568171580-Champions_TV-Vidio.jpeg",
+                "url": "https://tvratu.my.id/vid/index.mpd?id=6786&type=dash|drmScheme=clearkey&drmLicense=0368770b1b2a3b3b9377c75e32acd23f:2cdada53fa00b7b66518261ed587b2d9"
+            },
+            
+            // Kategori: TV Movies
+            {
+                "name": "HBO",
+                "category": "TV Movies",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsJCt8flc4ECpgPntHKPzTcQzozpbVEVt3Gg&usqp=CAU",
+                "url": "https://cors-proxy.wangzhishi.net/https://unifi-live2.secureswiftcontent.com/Content/DASH/Live/channel(HBO)/master.mpd|drmScheme=clearkey&drmLicense=7ad888ee5dd6496a8c2c77a6284ff936:718716c435914901d2551930a256974e"
+            },
+            {
+                "name": "TVN",
+                "category": "TV Movies",
+                "logo": "https://thumbor.prod.vidiocdn.com/GywFg7I_Jkpy5noohBX1mLkoRXQ=/filters:quality(70)/vidio-web-prod-livestreaming/uploads/livestreaming/image/6362/tvn-40a16d.jpg",
+                "url": "https://cors-proxy.wangzhishi.net/https://unifi-live2.secureswiftcontent.com/Content/DASH/Live/channel(tVNHD)/master.mpd|drmScheme=clearkey&drmLicense=925fe1266db744a3b9524a23a6cc524b:d1266e747e241339a539e54f26890286"
+            },
+            {
+                "name": "ROCK ACTION",
+                "category": "TV Movies",
+                "logo": "https://thumbor.prod.vidiocdn.com/1bHJE8jzAfdHr_zMSs216Ya-pGk=/filters:quality(70)/vidio-web-prod-livestreaming/uploads/livestreaming/image/8121/rock-action-3cc936.jpg",
+                "url": "https://d84q7nw4qf3j3.cloudfront.net/out/v1/010bb28c19b64975b318d3b00f58b18b/index.mpd|drmScheme=clearkey&drmLicense=d4126f7fd6134adfbedb3a0daefd7657:920f1adcca60069c887da7f1d225607d"
+            },
+
+            // Kategori: TV Kids & Others
+            {
+                "name": "Animax",
+                "category": "TV Kids",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLPk7mD7E4stFosi9QIJAWtG7dxuwsGbmgKEr4ixcfZLkFDxLd2gTUuE6t&s=10",
+                "url": "http://d84q7nw4qf3j3.cloudfront.net/out/v1/ab3ef0f0e4144c3c8b7e60f1873a3bcc/index.mpd|drmScheme=clearkey&drmLicense=6f309276a94e45be89a8860159456e84:3fe2eec12885264556ca4e29aa6c0c40"
+            },
+            {
+                "name": "Discovery Channel",
+                "category": "TV Others",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQgLiwkOnQ9cZzUXfpkRAJj7WGbZCFMAwxXvA&usqp=CAU",
+                "url": "https://qp-pldt-live-bpk-01-prod.akamaized.net/bpk-tv/discovery/default/index.mpd|drmScheme=clearkey&drmLicense=d5a7f8219c364e50b2147f6d3a8c9025:c77d5e56c52c4065c42594422ac85e2c"
+            }
+        ];
+
+        const videoEl = document.getElementById('videoPlayer');
+        const statusEl = document.getElementById('status');
+        let player;
+
+        // 2. INISIALISASI SHAKA PLAYER
+        function initApp() {
+            shaka.polyfill.installAll();
+            if (shaka.Player.isBrowserSupported()) {
+                player = new shaka.Player(videoEl);
+                player.addEventListener('error', onErrorEvent);
+                renderChannelList();
+            } else {
+                alert('Browser ini tidak mendukung Shaka Player!');
+            }
+        }
+
+        // Tampilan Error Console
+        function onErrorEvent(event) {
+            const error = event.detail;
+            console.error('Shaka Error:', error.code, error);
+            
+            let errMsg = "Terjadi Kesalahan Sistem.";
+            if (error.code === 1002 || error.code === 1001) errMsg = "Link mati atau diblokir CORS.";
+            if (error.code === 6012 || error.code === 6007) errMsg = "Gagal mengambil lisensi DRM (Server Key Mati).";
+            
+            statusEl.innerHTML = `❌ Error [${error.code}]: ${errMsg}`;
+            statusEl.className = 'error-text';
+        }
+
+        // 3. RENDER MENU SIDEBAR (Dikelompokkan berdasarkan Kategori)
+        function renderChannelList() {
+            const listDiv = document.getElementById('channel-list');
+            
+            // Mengelompokkan channel berdasarkan kategori
+            const categories = {};
+            STREAM_URLS.forEach(ch => {
+                if (!categories[ch.category]) categories[ch.category] = [];
+                categories[ch.category].push(ch);
+            });
+
+            for (const [catName, channels] of Object.entries(categories)) {
+                // Buat Judul Kategori
+                const title = document.createElement('div');
+                title.className = 'category-title';
+                title.innerText = catName;
+                listDiv.appendChild(title);
+
+                // Buat Tombol Channel
+                channels.forEach(channel => {
+                    const card = document.createElement('div');
+                    card.className = 'channel-card';
+                    card.innerHTML = `
+                        <img class="channel-logo" src="${channel.logo}" alt="logo">
+                        <div class="channel-info">
+                            <span class="channel-name">${channel.name}</span>
+                        </div>
+                    `;
+                    card.onclick = () => playStream(channel.name, channel.url);
+                    listDiv.appendChild(card);
+                });
+            }
+        }
+
+        // 4. MESIN PEMUTAR & EKSTRAKTOR DRM
+        async function playStream(channelName, rawData) {
+            statusEl.className = '';
+            statusEl.innerHTML = `⏳ Sedang memuat <b>${channelName}</b>...`;
+            
+            try {
+                // Memecah format "URL_ASLI|PARAMETER"
+                const [streamUrl, paramsStr] = rawData.split('|');
+                const params = new URLSearchParams(paramsStr || '');
+                const drmScheme = params.get('drmScheme');
+                const drmLicense = params.get('drmLicense');
+
+                // Reset konfigurasi sebelumnya
+                const shakaConfig = { drm: { clearKeys: {}, servers: {} } };
+
+                // Deteksi dan Atur Sistem Keamanan (ClearKey/Widevine)
+                if (drmScheme === 'clearkey' && drmLicense) {
+                    const keys = {};
+                    drmLicense.split(',').forEach(pair => {
+                        const [kid, key] = pair.split(':');
+                        if (kid && key) keys[kid] = key;
+                    });
+                    shakaConfig.drm.clearKeys = keys;
+                    console.log(`[DRM] ClearKey diterapkan untuk ${channelName}`);
+                } 
+                else if (drmScheme === 'widevine' && drmLicense) {
+                    shakaConfig.drm.servers = { 'com.widevine.alpha': drmLicense };
+                    console.log(`[DRM] Widevine diterapkan untuk ${channelName}`);
+                }
+
+                // Terapkan konfigurasi ke player
+                player.configure(shakaConfig);
+                
+                // Mulai memutar URL
+                await player.load(streamUrl);
+                
+                statusEl.innerHTML = `✅ Sedang menonton: <b>${channelName}</b>`;
+            } catch (error) {
+                console.error('Gagal memuat stream:', error);
+                statusEl.innerHTML = `❌ Gagal memutar <b>${channelName}</b>. Link mungkin rusak/expired.`;
+                statusEl.className = 'error-text';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
