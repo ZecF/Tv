@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dimas TV - Ultimate Proxy Edition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f0f0f; color: white; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 330px; background: #1a1a1a; overflow-y: auto; border-right: 1px solid #2a2a2a; padding: 15px; box-sizing: border-box; }
+        .sidebar::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #e50914; border-radius: 4px; }
+        h2 { text-align: center; border-bottom: 2px solid #e50914; padding-bottom: 10px; margin-top: 0; font-size: 24px; color: #fff; text-transform: uppercase; letter-spacing: 2px; }
+        .category-title { margin: 25px 0 10px 0; font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #333; padding-bottom: 5px; font-weight: bold; }
+        .channel-card { display: flex; align-items: center; padding: 10px; background: #242424; margin-bottom: 8px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; border: 1px solid transparent; }
+        .channel-card:hover { background: #333; border-color: #e50914; transform: translateX(5px); box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+        .channel-card.active { background: #e50914; border-color: #ff3333; }
+        .channel-logo { width: 60px; height: 40px; object-fit: contain; background: #fff; border-radius: 4px; margin-right: 12px; padding: 2px; }
+        .channel-name { font-weight: 600; font-size: 14px; color: #eee; }
+        .main { flex-grow: 1; display: flex; flex-direction: column; background: #000; }
+        .video-container { flex-grow: 1; position: relative; display: flex; justify-content: center; align-items: center; }
+        video { width: 100%; height: 100%; object-fit: contain; outline: none; }
+        #status { padding: 15px; background: #151515; text-align: center; font-weight: bold; border-top: 1px solid #2a2a2a; color: #00ff88; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        .error-text { color: #ff3333 !important; }
+        .proxy-text { color: #ffb700 !important; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>📺 DIMAS TV</h2>
+        <div id="channel-list"></div>
+    </div>
+
+    <div class="main">
+        <div class="video-container">
+            <video id="videoPlayer" controls autoplay></video>
+        </div>
+        <div id="status">Pilih channel di samping untuk mulai menonton...</div>
+    </div>
+
+    <script>
+        // DATA CHANNEL: Kombinasi Golden List + Channel Baru + Proxy API
+        const STREAM_URLS = [
+            // ==========================================
+            // KATEGORI: TV NASIONAL (Telah Lulus Uji)
+            // ==========================================
+            {
+                "name": "TVRI Nasional",
+                "category": "TV Nasional",
+                "logo": "https://thumbor.prod.vidiocdn.com/ITgomqe4r80G_YlUJO-ZLBdgztM=/filters:quality(70)/vidio-web-prod-livestreaming/uploads/livestreaming/image/6441/tvri-tv-stream-f6cbb3.jpg",
+                "url": "https://ott-balancer.tvri.go.id/live/eds/Nasional/hls/Nasional.m3u8"
+            },
+            {
+                "name": "Metro TV",
+                "category": "TV Nasional",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2kPbkIp9idNFIcbHt1lxXr6FKQQUpRzrisw&usqp=CAU",
+                "url": "https://op-flashcon-digdayahd-1.dens.tv/h/h12/index.m3u8"
+            },
+            {
+                "name": "BTV (Berita Satu)",
+                "category": "TV Nasional",
+                "logo": "https://thumbor.prod.vidiocdn.com/4HBTMNO-_vri_NmmDniraoabE4c=/filters:quality(70)/vidio-web-prod-livestreaming/uploads/livestreaming/image/6165/beritasatu-e7ed52.jpg",
+                "url": "https://op-flashcon-digdayaxenkoda.dens.tv/e6550891-6bef-42e1-bab9-13bf4af739ce/stream.m3u8"
+            },
+            {
+                "name": "Garuda TV",
+                "category": "TV Nasional",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGlgUdDa7-fZXLbW-pH52ATgr6-3CxX651NA&usqp=CAU",
+                "url": "https://hgmtv.com:19360/garudatvlivestreaming/garudatvlivestreaming.m3u8"
+            },
+
+            // ==========================================
+            // KATEGORI: OLAHRAGA
+            // ==========================================
+            {
+                "name": "Real Madrid TV",
+                "category": "Olahraga",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSNxBCXUOMNAi9BbQDpxxyazAD7YsW0n7lg-3KH6Lhh4a0AC8rGBxwwG5G-&s=10",
+                "url": "https://rmtv.akamaized.net/hls/live/2043154/rmtv-en-web/master.m3u8"
+            },
+            {
+                "name": "AC Milan TV",
+                "category": "Olahraga",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2jCWCmH9R0WS0_dnYjXVas4orr_gcRWmuLbszjFkyPtu_oMGw_eqjKX4&s=10",
+                "url": "https://otte.live.fly.ww.aiv-cdn.net/lhr-nitro/live/clients/dash/enc/jsqfhask6w/out/v1/e70dcd0f1e684592a3db4bbe7feee0fa/cenc.mpd|drmScheme=clearkey&drmLicense=602f114e6caa09eb9ec0dc18d0b01cb0:0c433e2a2157f7c1e240ad7eac62d604"
+            },
+            {
+                "name": "Inter Milan TV",
+                "category": "Olahraga",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJjO5evT_xQZ08eS5KUnmtDHjI92GF0f1zZgysIf29Z9750eOaGCb_nccC&s=10",
+                "url": "https://otte.live.fly.ww.aiv-cdn.net/lhr-nitro/live/clients/dash/enc/ekeomalvg7/out/v1/f63288f993e6470580623d7b9b45efb0/cenc.mpd|drmScheme=clearkey&drmLicense=7313f38125a3fefd00cf7d6567ff333b:87b49a0329febb10eef514fd0f044ee2"
+            },
+            {
+                "name": "CBS Golazo",
+                "category": "Olahraga",
+                "logo": "https://public-assets-pressexpress.s3.amazonaws.com/assets/pages/images/2023/06/05/HypeCBS-wnmrjfab.png",
+                "url": "https://otte.live.fly.ww.aiv-cdn.net/PDX/live/clients/dash/enc/5qz8wmdome/out/v1/b9323e853dce427eac214b77bd48a204/cenc.mpd|drmScheme=clearkey&drmLicense=d9623774ac5c8c351aafe97c5fe70267:5164e6d05164a2d65fa8fcc962aa4861"
+            },
+
+            // ==========================================
+            // KATEGORI: FILM & HIBURAN
+            // ==========================================
+            {
+                "name": "Movie Sphere",
+                "category": "Film & Hiburan",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-_Y4gs8EO8rIRq54qmUgAEpByiP9m1_yiDI2XEa_PvHzTztocFOiqtGfP&s=10",
+                "url": "https://moviesphereuk-samsunguk.amagi.tv/playlist.m3u8"
+            },
+            {
+                "name": "Rock Action",
+                "category": "Film & Hiburan",
+                "logo": "https://thumbor.prod.vidiocdn.com/1bHJE8jzAfdHr_zMSs216Ya-pGk=/filters:quality(70)/vidio-web-prod-livestreaming/uploads/livestreaming/image/8121/rock-action-3cc936.jpg",
+                "url": "https://d84q7nw4qf3j3.cloudfront.net/out/v1/010bb28c19b64975b318d3b00f58b18b/index.mpd|drmScheme=clearkey&drmLicense=d4126f7fd6134adfbedb3a0daefd7657:920f1adcca60069c887da7f1d225607d"
+            },
+            {
+                "name": "Run Time Movies",
+                "category": "Film & Hiburan",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQNspkOSEzplCaR9S8_u2HrL8bzdb3IlTl72w&usqp=CAU",
+                "url": "https://stream.ads.ottera.tv/playlist.m3u8?network_id=2649"
+            },
+            {
+                "name": "Hi YAAH Action Movie",
+                "category": "Film & Hiburan",
+                "logo": "https://vhx.imgix.net/hi-yahtv/assets/2d0cd40c-eaee-48cf-9ab3-b2cf69d6e110-9b300abc.png",
+                "url": "https://a28dc5e3f24c4a8da3a67c68be729c2c.mediatailor.us-west-2.amazonaws.com/v1/master/ba62fe743df0fe93366eba3a257d792884136c7f/LINEAR-59-HIYAH-PLEX/mt/plex/59/hls/master/playlist.m3u8"
+            },
+            {
+                "name": "K-Drama Channel",
+                "category": "Film & Hiburan",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxWv9kqudhSBWDYeluULuCPk0qfGh6Q-CrYpNXVIUvXOpQ7EqVJ0fEDXDX&s=10",
+                "url": "https://stream.ads.ottera.tv/playlist.m3u8?network_id=425"
+            },
+
+            // ==========================================
+            // KATEGORI: ALAM & PENGETAHUAN
+            // ==========================================
+            {
+                "name": "Discovery Asia",
+                "category": "Pengetahuan & Alam",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQgLiwkOnQ9cZzUXfpkRAJj7WGbZCFMAwxXvA&usqp=CAU",
+                "url": "https://cdn4.skygo.mn/live/disk1/Discovery_Asia/HLSv3-FTA/Discovery_Asia.m3u8"
+            },
+            {
+                "name": "Animal Planet",
+                "category": "Pengetahuan & Alam",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRmXSrXRjpFDmM0vv8yWFMWPSfjewcZ50CiWl24x_6B2qaRDlGojcVbKlCg&s=10",
+                "url": "https://s2129134.cdn.mytvnet.vn/pkg20/live_dzones/ap.smil/manifest.mpd|drmScheme=clearkey&drmLicense=ec6f072c7125377a9bc0ae61598095f4:1d5388e0781415ebcec9914f5ad75875"
+            },
+            {
+                "name": "Wild Earth",
+                "category": "Pengetahuan & Alam",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQprstG26smLtPwUnH4-Rb4TiOymxvQiERjMrhtMYjunTl3OQ5H1OHwhoc&s=10",
+                "url": "https://wildearth-plex.amagi.tv/master.m3u8"
+            },
+
+            // ==========================================
+            // KATEGORI: ANIME & KARTUN
+            // ==========================================
+            {
+                "name": "Naruto TV",
+                "category": "Anime & Kartun",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTGknQ_T4kVmRvDxLYO6V17IiNlNRYYT38X6g&usqp=CAU",
+                "url": "https://service-stitcher.clusters.pluto.tv/stitch/hls/channel/5ee92e72fb286e0007285fec/master.m3u8?HasBahCa.m3u8?advertisingId=&appName=web&appVersion=unknown&appStoreUrl=&architecture=&buildVersion=&clientTime=0&deviceDNT=0&deviceId=bff27170-6307-11eb-b3fa-019cb96f121b&deviceMake=Chrome&deviceModel=web&deviceType=web&deviceVersion=unknown&includeExtendedEvents=false&sid=d1372261-d71b-427e-b9b7-e0afe4a6974b&userId=&serverSideAds=true"
+            },
+            {
+                "name": "One Piece TV",
+                "category": "Anime & Kartun",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToIPzzu5pgxL01gZAAGRlatHf3YCqSlC0gQ3SBA0HFjrfhT2dUoZ_84V7K&s=10",
+                "url": "https://service-stitcher.clusters.pluto.tv/stitch/hls/channel/5ff4b9ccf938f8000779eb99/master.m3u8?HasBahCa.m3u8?advertisingId=&appName=web&appVersion=unknown&appStoreUrl=&architecture=&buildVersion=&clientTime=0&deviceDNT=0&deviceId=79573c14-77dd-11eb-a61c-2f38487b60c0&deviceMake=Chrome&deviceModel=web&deviceType=web&deviceVersion=unknown&includeExtendedEvents=false&sid=c4c4d3a3-dc88-49b4-9fda-30049d73b3f2&userId=&serverSideAds=true"
+            },
+            {
+                "name": "Baby Shark",
+                "category": "Anime & Kartun",
+                "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDCYlY0VSx8Pwak7PFlGy6uzAz43wjzWkcew&usqp=CAU",
+                "url": "https://newidco-babysharktv-1-eu.rakuten.wurl.tv/playlist.m3u8"
+            }
+        ];
+
+        const videoEl = document.getElementById('videoPlayer');
+        const statusEl = document.getElementById('status');
+        let player;
+        let currentActiveCard = null;
+
+        function initApp() {
+            shaka.polyfill.installAll();
+            if (shaka.Player.isBrowserSupported()) {
+                player = new shaka.Player(videoEl);
+                player.configure({
+                    streaming: { retryParameters: { maxAttempts: 3, baseDelay: 1000 } }
+                });
+                player.addEventListener('error', onErrorEvent);
+                renderChannelList();
+            } else {
+                alert('Browser tidak mendukung Shaka Player.');
+            }
+        }
+
+        function onErrorEvent(event) {
+            const error = event.detail;
+            console.error('Shaka Error:', error.code, error);
+            statusEl.innerHTML = `❌ Error [${error.code}]: Stream terputus / diblokir CORS / DRM Kedaluwarsa.`;
+            statusEl.className = 'error-text';
+        }
+
+        function renderChannelList() {
+            const listDiv = document.getElementById('channel-list');
+            const categories = {};
+            
+            STREAM_URLS.forEach(ch => {
+                if (!categories[ch.category]) categories[ch.category] = [];
+                categories[ch.category].push(ch);
+            });
+
+            for (const [catName, channels] of Object.entries(categories)) {
+                const title = document.createElement('div');
+                title.className = 'category-title';
+                title.innerText = catName;
+                listDiv.appendChild(title);
+
+                channels.forEach(channel => {
+                    const card = document.createElement('div');
+                    card.className = 'channel-card';
+                    card.innerHTML = `<img class="channel-logo" src="${channel.logo}"><div class="channel-info"><span class="channel-name">${channel.name}</span></div>`;
+                    
+                    card.onclick = () => {
+                        if (currentActiveCard) currentActiveCard.classList.remove('active');
+                        card.classList.add('active');
+                        currentActiveCard = card;
+                        playStream(channel.name, channel.url);
+                    };
+                    listDiv.appendChild(card);
+                });
+            }
+        }
+
+        async function playStream(channelName, rawData) {
+            statusEl.className = '';
+            statusEl.innerHTML = `⏳ Menghubungkan ke <b>${channelName}</b>...`;
+            
+            try {
+                const [streamUrl, paramsStr] = rawData.split('|');
+                const params = new URLSearchParams(paramsStr || '');
+                const drmScheme = params.get('drmScheme');
+                const drmLicense = params.get('drmLicense');
+                
+                // Mendeteksi kebutuhan Proxy Zynfx berdasarkan User-Agent
+                const reqUa = params.get('User-Agent') || params.get('user-agent') || '';
+                const reqRef = params.get('Referer') || params.get('referer') || '';
+                const needsProxy = reqUa !== '' || reqRef !== '';
+
+                const shakaConfig = { drm: { clearKeys: {}, servers: {} } };
+
+                // Memasang gembok lisensi
+                if (drmScheme === 'clearkey' && drmLicense) {
+                    const keys = {};
+                    drmLicense.split(',').forEach(pair => {
+                        const [kid, key] = pair.split(':');
+                        if (kid && key) keys[kid] = key;
+                    });
+                    shakaConfig.drm.clearKeys = keys;
+                }
+
+                player.configure(shakaConfig);
+
+                // === MESIN PROXY ZYNFX ===
+                // Fitur ini dipertahankan khusus untuk channel yang kedepannya butuh penyamaran User-Agent
+                player.getNetworkingEngine().clearAllRequestFilters();
+                
+                if (needsProxy) {
+                    statusEl.innerHTML = `🕵️‍♂️ Memanggil Agen Zynfx untuk <b>${channelName}</b>...`;
+                    statusEl.className = 'proxy-text';
+                    
+                    player.getNetworkingEngine().registerRequestFilter((type, request) => {
+                        if (type == shaka.net.NetworkingEngine.RequestType.LICENSE) return;
+
+                        const originalUri = request.uris[0];
+                        let proxyUrl = `https://zynfx.eu.org/api/proxy?url=${encodeURIComponent(originalUri)}`;
+                        if (reqUa) proxyUrl += `&ua=${encodeURIComponent(reqUa)}`;
+                        if (reqRef) proxyUrl += `&referer=${encodeURIComponent(reqRef)}`;
+
+                        request.uris[0] = proxyUrl;
+                    });
+                }
+                // =========================
+
+                await player.load(streamUrl);
+                
+                if (needsProxy) {
+                    statusEl.innerHTML = `✅ Zynfx sukses menyiarkan: <b>${channelName}</b>`;
+                    statusEl.className = 'proxy-text';
+                } else {
+                    statusEl.innerHTML = `✅ Sedang menonton: <b>${channelName}</b>`;
+                    statusEl.className = '';
+                }
+                
+            } catch (error) {
+                console.error('Gagal memuat stream:', error);
+                statusEl.innerHTML = `❌ Gagal memutar <b>${channelName}</b>.`;
+                statusEl.className = 'error-text';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
+
